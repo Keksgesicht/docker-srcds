@@ -1,9 +1,12 @@
 FROM steamcmd/steamcmd
 
-ENV HOME        /root
+ENV UID         99
+ENV GID         100
+ENV HOME        /home/steam
 
 ENV SCRIPTS     $HOME/scripts
-ENV INSTALLDIR  $HOME/.steam/steamapps/common
+ENV STEAMDIR	$HOME/.steam
+ENV INSTALLDIR  $STEAMDIR/steamapps/common
 
 ENV STEAMAPPID  4020
 ENV COMNAME     GarrysModDS
@@ -22,13 +25,13 @@ RUN dpkg --add-architecture i386 \
 	libsdl2-2.0-0:i386 \
  && apt-get clean autoclean \
  && apt-get autoremove -y \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd --uid $UID --gid $GID -m steam
 
 ADD scripts/ $SCRIPTS
 WORKDIR $SCRIPTS
-RUN steamcmd \
-	+quit
 
+USER steam
 EXPOSE $SVPORT/udp
 ENTRYPOINT ./srcds_install.sh \
         && ./srcds_start.sh
